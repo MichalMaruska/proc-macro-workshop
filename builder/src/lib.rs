@@ -35,12 +35,26 @@ pub fn derive(input: TokenStream) -> TokenStream {
         quote! { #name: std::option::Option<#ty> }
     });
 
+    let methods = fields.iter().map(|f| {
+        let name = &f.ident;
+        let ty = &f.ty;
+        quote! {
+            pub fn #name ( & mut self, #name: #ty) -> &mut Self {
+                self.#name = Some(#name);
+                self
+            }
+        }});
+
     // tokens
     // eprintln!("{:#?}", ast);
     let output = //  proc_macro2::TokenStream
         quote! {
             pub struct #bident {
                 #(#optionized,)*
+            }
+
+            impl #bident {
+                #(#methods)*
             }
 
             impl #name {
