@@ -5,25 +5,14 @@ use proc_macro::TokenStream;
 // > If parsing with Syn, you’ll use parse_macro_input! instead to propagate
 // > parse errors correctly back to the compiler when parsing fails.
 // so it's even better?
-use syn::{parse_macro_input, Result};
-use syn::parse::{Parse, ParseStream};  // will use this trait!
-
-struct MyMacroInput {
-    /* ... */
-}
-
-impl Parse for MyMacroInput {
-    fn parse(input: ParseStream) -> Result<Self> {
-        /* ... */
-        Ok(MyMacroInput{})
-    }
-}
+use syn::{parse_macro_input, DeriveInput};
+use syn::parse::{Parse};  // will use this trait!
 
 #[proc_macro_derive(Builder)]
 pub fn derive(input: TokenStream) -> TokenStream {
 
     // even better?
-    let _input = parse_macro_input!(input as MyMacroInput);
+    let _input = parse_macro_input!(input as DeriveInput);
     // tokens
 
     /* transform input */
