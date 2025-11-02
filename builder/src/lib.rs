@@ -16,11 +16,31 @@ pub fn derive(input: TokenStream) -> TokenStream {
     let name = &ast.ident;
     let bname = format!("{name}Builder");
     let bident = syn::Ident::new(&bname, ast.ident.span());
+
+    let fields = if
+        let syn::Data::Struct(syn::DataStruct
+                              { fields:  syn::Fields::Named (
+                                  syn::FieldsNamed {
+                                      // this is ref to a vector.
+                                      ref named, ..}), .. }) = ast.data {
+            // so this is a &vector<Field,Token>
+            named
+        } else {
+            unimplemented!()
+        };
+
+    let optionized = fields.iter().map(|f| { // over Field
+        let name = &f.ident;
+        let ty = &f.ty;
+        quote! { #name: std::option::Option<#ty> }
+    });
+
     // tokens
     // eprintln!("{:#?}", ast);
     let output = //  proc_macro2::TokenStream
         quote! {
-            struct #bident {
+            pub struct #bident {
+                #(#optionized,)*
             }
 
             impl #name {
