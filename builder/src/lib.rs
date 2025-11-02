@@ -34,6 +34,13 @@ pub fn derive(input: TokenStream) -> TokenStream {
         let ty = &f.ty;
         quote! { #name: std::option::Option<#ty> }
     });
+    let build_fields = fields.iter().map(|f| {
+        let name = &f.ident;
+
+        quote! {
+            #name: self.#name.clone().ok_or(concat!(stringify!(#name), " is not set"))?
+        }
+    });
 
     let methods = fields.iter().map(|f| {
         let name = &f.ident;
@@ -55,6 +62,12 @@ pub fn derive(input: TokenStream) -> TokenStream {
 
             impl #builder_ident {
                 #(#methods)*
+
+                pub fn build(&self) -> Result<#name, Box<dyn std::error::Error>> {
+                    Ok(#name {
+                        #(#build_fields,)*
+                    })
+                }
             }
 
             impl #name {
