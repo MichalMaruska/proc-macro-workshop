@@ -59,7 +59,12 @@ pub fn derive(input: TokenStream) -> TokenStream {
 
             impl #name {
                fn builder() -> #bident {
-                    return #bident {}
+                    return #bident {
+                        executable: None,
+                        current_dir: None,
+                        env: None,
+                        args: None,
+                    }
                 }
             }
         };
