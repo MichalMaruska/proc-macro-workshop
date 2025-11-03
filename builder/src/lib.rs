@@ -9,6 +9,7 @@ use std::assert_matches::assert_matches;
 // > parse errors correctly back to the compiler when parsing fails.
 // so it's even better?
 use syn::{parse_macro_input, DeriveInput};
+use syn::Expr;
 use quote::quote;
 
 // at 1:26 he simplifies a lot. to meet another requirement
@@ -37,8 +38,44 @@ fn ty_inner_type(ty: &syn::Type) -> Option<&syn::Type> {
     None
 }
 
+// Based on what I see in the dump
+fn extract_attribute(f: &syn::Field) -> Option<proc_macro2::Ident> {
+    let name = "each";
 
-#[proc_macro_derive(Builder)]
+    for attr in &f.attrs {
+        // we want it Outer -- in front of the field name
+        if attr.style == syn::AttrStyle::Outer {};
+        // it's not a path, but MetaList
+        if attr.path().segments.len() == 1 &&
+            attr.path().segments[0].ident == "builder" {
+                // tokens[Ident = Literal]
+                // ident = "each"
+                // literal ... name of the function.
+                eprintln!("Found: {:#?}", f.attrs);
+
+                let assignment: Expr = attr.parse_args().unwrap();
+                if let Expr::Assign(
+                    assign
+                ) = assignment {
+                    // ExprAssign
+                    eprintln!("it's an assignment: {:#?}", assign);
+                    return Some(
+                        proc_macro2::Ident::new(
+                            "hello",
+                            // string: &str,
+                            //span: Span
+                            //
+                            attr.path().segments.first().unwrap().ident.span(),
+                        )
+                        // quote! {}
+                    )
+                }
+            }
+    }
+    None
+}
+
+#[proc_macro_derive(Builder, attributes(builder))]
 pub fn derive(input: TokenStream) -> TokenStream {
 
     let ast = parse_macro_input!(input as DeriveInput); // tokens ... > tree.
@@ -105,6 +142,14 @@ pub fn derive(input: TokenStream) -> TokenStream {
             }
         }});
 
+    // iterator
+    // recognize when attribute says to create a function, and maybe suppress
+    // the usual one:
+    let extend_methods = fields.iter().filter_map(|f| {
+        extract_attribute(f)
+    });
+
+    let a: Vec<_> = extend_methods.collect();
     // tokens
     // eprintln!("{:#?}", ast);
     let output = //  proc_macro2::TokenStream
