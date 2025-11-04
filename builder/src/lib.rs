@@ -9,7 +9,7 @@ use std::assert_matches::assert_matches;
 // > parse errors correctly back to the compiler when parsing fails.
 // so it's even better?
 use syn::{parse_macro_input, DeriveInput};
-use syn::{Meta,Expr,Lit,ExprLit,Attribute};
+use syn::{Meta,Expr,Lit,ExprLit, ExprPath ,Attribute};
 use quote::quote;
 
 // at 1:26 he simplifies a lot. to meet another requirement
@@ -65,11 +65,15 @@ fn extract_builder(field_name: &str, attr: &Attribute) -> Option<(bool, proc_mac
 
     if let Expr::Assign(assign) = assignment {
 
-        if let Expr::Lit( ExprLit{lit: Lit::Str(ref strlit), ..} ) = *assign.right {
-            dbg!(&strlit);
+        if let Expr::Path( ExprPath{ref path, ..} ) = *assign.left {
+            if !path.is_ident("each") {
+            //assert_eq!(path.get_ident(), "each");
+        }
 
-            if let Expr::Path(ref i) = *assign.left {
-                return Some(
+
+        if let Expr::Lit( ExprLit{lit: Lit::Str(ref strlit), ..} ) = *assign.right {
+            // dbg!(&strlit);
+            return Some(
                     (
                     field_name == &strlit.value(),
                     proc_macro2::Ident::new(
