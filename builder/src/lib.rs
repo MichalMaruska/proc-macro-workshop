@@ -62,7 +62,7 @@ fn extract_builder(field_name: &str, attr: &Attribute) -> Option<(bool, proc_mac
     // literal ... name of the function.
     // eprintln!("Found: {:#?}", attr); // f.attrs
 
-    if let Meta::List(ref list) = attr.meta {
+    if let Meta::List(_) = attr.meta {
         // eprintln!("extract: {:#?}", list);
 
         // let atrr.parse_args()
