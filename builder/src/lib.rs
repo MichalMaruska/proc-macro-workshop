@@ -55,38 +55,15 @@ fn builder_attribute(f: &syn::Field) -> Option<&Attribute> {
 }
 
 fn extract_builder(field_name: &str, attr: &Attribute) -> Option<(bool, proc_macro2::Ident)> {
-    let name = "each";
-
-    // tokens[Ident = Literal]
-    // ident = "each"
-    // literal ... name of the function.
-    // eprintln!("Found: {:#?}", attr); // f.attrs
 
     if let Meta::List(_) = attr.meta {
-        // eprintln!("extract: {:#?}", list);
-
-        // let atrr.parse_args()
-        // assert_eq!(list.tokens.Ident, "each");
     } else {
         panic!("not a list?")
     }
-    // if let list attr.path()
-    // parse_args_with
 
     let assignment: Expr = attr.parse_args().unwrap(); // fixme!
 
     if let Expr::Assign(assign) = assignment {
-        // ExprAssign
-        // fixme: eprintln!("it's an assignment: {:#?}", assign);
-        // dbg!(&assign.left);
-        // dbg!(&assign.right);
-        // dbg!(& attr.path().segments.first().unwrap().ident);
-
-        // let Expr::Lit{ syn::ExprLit(lit: Lit::Str(ref strlit))} = *assign.right
-        // Expr
-        // syn::ExprLit
-        // ExprLit(ref lit )
-
 
         if let Expr::Lit( ExprLit{lit: Lit::Str(ref strlit), ..} ) = *assign.right {
             dbg!(&strlit);
