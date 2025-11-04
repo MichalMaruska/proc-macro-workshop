@@ -40,7 +40,7 @@ fn ty_inner_type(ty: &syn::Type) -> Option<&syn::Type> {
 
 // Based on what I see in the dump
 // returns each = "ident"
-fn extract_attribute(f: &syn::Field) -> Option<proc_macro2::Ident>{
+fn extract_attribute(f: &syn::Field) -> Option<proc_macro2::Ident> {
     let name = "each";
 
     for attr in &f.attrs {
@@ -79,29 +79,18 @@ fn extract_attribute(f: &syn::Field) -> Option<proc_macro2::Ident>{
                     // syn::ExprLit
                     // ExprLit(ref lit )
 
-                    if let Expr::Lit( litExpr ) = *assign.right {
-                    // if let Expr::Lit{ ExprLit{ lit: ref lit, ..} } = *assign.right {
-                        // bad: if let ExprLit(lit: ref litv, ..) = litExpr {
-                        // Good:
-                        if let ExprLit{lit: ref lit, ..} = litExpr {
 
-                            if let Lit::Str(strlit) = lit {
-                                dbg!(&strlit);
+                    if let Expr::Lit( ExprLit{lit: Lit::Str(ref strlit), ..} ) = *assign.right {
+                        dbg!(&strlit);
 
-                            if let Expr::Path(ref i) = *assign.left {
-                                return Some(
-                                    proc_macro2::Ident::new(
-                                        &strlit.value(),
-                                        // "hello",
-                                        // attr.path().segments.first().unwrap().ident,
-                                        // string: &str,
-                                        //span: Span
-                                        //
-                                        attr.path().segments.first().unwrap().ident.span(),
-                                    )
-                                    // quote! {}
+                        if let Expr::Path(ref i) = *assign.left {
+                            return Some(
+                                proc_macro2::Ident::new(
+                                    &strlit.value(),
+                                    attr.path().segments.first().unwrap().ident.span(),
                                 )
-                            }}}}
+                            )
+                        }}
                 } else {
                     panic!("not an assignment")
                 }
