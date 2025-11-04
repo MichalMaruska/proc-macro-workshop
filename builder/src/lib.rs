@@ -8,7 +8,6 @@ use proc_macro::TokenStream;
 use syn::{parse_macro_input, DeriveInput};
 use quote::quote;
 
-
 // at 1:26 he simplifies a lot. to meet another requirement
 //  1:30   returns Option to avoid 2 methods.
 //  1:35  here
@@ -39,8 +38,14 @@ fn ty_inner_type(ty: &syn::Type) -> Option<&syn::Type> {
 #[proc_macro_derive(Builder)]
 pub fn derive(input: TokenStream) -> TokenStream {
 
-    // even better?
     let ast = parse_macro_input!(input as DeriveInput); // tokens ... > tree.
+
+    // we expect this:
+    if let syn::Data::Struct(ref dataStruct) = ast.data {
+    } else {
+        panic!("not a struct");
+    }
+
     let name = &ast.ident;
     let bname = format!("{name}Builder");
     let builder_ident = syn::Ident::new(&bname, ast.ident.span());
