@@ -153,15 +153,10 @@ pub fn derive(input: TokenStream) -> TokenStream {
     // iterator
     // recognize when attribute says to create a function, and maybe suppress
     // the usual one:
-    let extend_methods = fields.iter().filter_map(|f| {
-        extract_attribute(f)
-    });
-    let a: Vec<_> = extend_methods.collect();
 
     // now stamp out
     // 1 when attribute -> drop Vector<>
     // same name? -- skip
-    //
 
     let methods = fields.iter().map(|f| {
         let name = &f.ident;
