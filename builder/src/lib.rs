@@ -132,10 +132,13 @@ pub fn derive(input: TokenStream) -> TokenStream {
             quote! { #name: std::option::Option<#ty> }
         }
     });
+
+    // the builder:
     let build_fields = fields.iter().map(|f| {
         let name = &f.ident;
         let ty = &f.ty;
 
+        // mapping: Struct -> StructBuilder
         if ty_inner_type(ty).is_some() {
             quote! {
                 #name: self.#name.clone()
@@ -182,6 +185,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
                 #(#optionized,)*
             }
 
+            // #(#extend_methods,)*;
             impl #builder_ident {
                 #(#methods)*
 
