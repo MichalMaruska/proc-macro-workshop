@@ -97,8 +97,6 @@ fn extract_builder(field_name: &str, attr: &Attribute) -> Option<(bool, proc_mac
                     field_name == &strlit.value(),
                     proc_macro2::Ident::new(
                         &strlit.value(),
-                        // attr.path().segments.first().unwrap().ident,
-                        //span: Span
                         attr.path().segments.first().unwrap().ident.span(),
                     ))
                 )
