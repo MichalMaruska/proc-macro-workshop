@@ -16,10 +16,10 @@ use quote::quote;
 //  1:30   returns Option to avoid 2 methods.
 //  1:35  here
 
-fn ty_inner_type(ty: &syn::Type) -> Option<&syn::Type> {
+fn ty_inner_type<'t> (outer: &'_ str, ty: &'t syn::Type) -> Option<&'t syn::Type> {
 
     if let syn::Type::Path(ref p) = ty {
-        if p.path.segments.len() != 1 || p.path.segments[0].ident != "Option" {
+        if p.path.segments.len() != 1 || p.path.segments[0].ident != outer {
             return None;
         }
 
@@ -126,7 +126,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
     let optionized = fields.iter().map(|f| { // over Field
         let name = &f.ident;
         let ty = &f.ty;
-        if ty_inner_type(ty).is_some() {
+        if ty_inner_type("Option", ty).is_some() {
             quote! { #name: #ty }
         } else {
             quote! { #name: std::option::Option<#ty> }
@@ -139,7 +139,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
         let ty = &f.ty;
 
         // mapping: Struct -> StructBuilder
-        if ty_inner_type(ty).is_some() {
+        if ty_inner_type("Option", ty).is_some() {
             quote! {
                 #name: self.#name.clone()
             }
@@ -166,7 +166,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
     let methods = fields.iter().map(|f| {
         let name = &f.ident;
         let ty = &f.ty;
-        if let Some(inner_ty) = ty_inner_type(ty) {
+        if let Some(inner_ty) = ty_inner_type("Option", ty) {
             quote! {
                 pub fn #name ( & mut self, #name: #inner_ty) -> &mut Self {
                     self.#name = Some(#name);
