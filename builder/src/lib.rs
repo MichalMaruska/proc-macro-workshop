@@ -13,7 +13,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
     // even better?
     let ast = parse_macro_input!(input as DeriveInput); // tokens ... > tree.
     // tokens
-    eprintln!("{:#?}", ast);
+    // eprintln!("{:#?}", ast);
 
     /* transform input */
     let output: proc_macro2::TokenStream = proc_macro2::TokenStream::new();
