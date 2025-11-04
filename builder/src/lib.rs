@@ -108,10 +108,13 @@ pub fn derive(input: TokenStream) -> TokenStream {
             unimplemented!()
         };
 
+    // Option -> avoid adding Option
+    // Vector -> as well?
     let optionized = fields.iter().map(|f| { // over Field
         let name = &f.ident;
         let ty = &f.ty;
-        if ty_inner_type("Option", ty).is_some() {
+
+        if ty_inner_type("Option", ty).is_some() || builder_attribute(f).is_some() {
             quote! { #name: #ty }
         } else {
             quote! { #name: std::option::Option<#ty> }
@@ -124,7 +127,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
         let ty = &f.ty;
 
         // mapping: Struct -> StructBuilder
-        if ty_inner_type("Option", ty).is_some() {
+        if ty_inner_type("Option", ty).is_some() || builder_attribute(f).is_some() {
             quote! {
                 #name: self.#name.clone()
             }
