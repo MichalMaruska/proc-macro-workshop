@@ -15,7 +15,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
     let ast = parse_macro_input!(input as DeriveInput); // tokens ... > tree.
     let name = &ast.ident;
     let bname = format!("{name}Builder");
-    let bident = syn::Ident::new(&bname, ast.ident.span());
+    let builder_ident = syn::Ident::new(&bname, ast.ident.span());
 
     let fields = if
         let syn::Data::Struct(syn::DataStruct
@@ -49,17 +49,17 @@ pub fn derive(input: TokenStream) -> TokenStream {
     // eprintln!("{:#?}", ast);
     let output = //  proc_macro2::TokenStream
         quote! {
-            pub struct #bident {
+            pub struct #builder_ident {
                 #(#optionized,)*
             }
 
-            impl #bident {
+            impl #builder_ident {
                 #(#methods)*
             }
 
             impl #name {
-               fn builder() -> #bident {
-                    return #bident {
+                fn builder() -> #builder_ident {
+                    return #builder_ident {
                         executable: None,
                         current_dir: None,
                         env: None,
