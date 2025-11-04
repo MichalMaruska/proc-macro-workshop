@@ -159,8 +159,28 @@ pub fn derive(input: TokenStream) -> TokenStream {
     // same name? -- skip
 
     let methods = fields.iter().map(|f| {
-        let name = &f.ident;
+
+        // let name = &f.ident.unwrap();
+        let name = &f.ident.as_ref().unwrap();
         let ty = &f.ty;
+        let mut same_name: bool = false;
+
+        if let Some(ref ident) = extract_attribute(f) {
+            dbg!(ident);
+
+            same_name = *name == ident;
+
+            // in this case I can assume it's Vec
+            if let Some(inner_ty) = ty_inner_type("Vec", ty) {
+                return quote! {
+                    pub fn #ident ( & mut self, #name: #inner_ty) -> &mut Self {
+                        self.#name.push(#name);
+                        self
+                    }
+                }
+            }
+        }
+
         if let Some(inner_ty) = ty_inner_type("Option", ty) {
             quote! {
                 pub fn #name ( & mut self, #name: #inner_ty) -> &mut Self {
