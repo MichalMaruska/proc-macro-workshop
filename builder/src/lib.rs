@@ -178,11 +178,21 @@ pub fn derive(input: TokenStream) -> TokenStream {
             return single_adder.unwrap();
         } else {
             // maybe both
+            let inner_ty = ty_inner_type("Option", ty);
             let setter =
-                if let Some(inner_ty) = ty_inner_type("Option", ty) {
+                if inner_ty.is_some() {
+
+                    let raw_type = inner_ty.unwrap();
                     quote! {
-                        pub fn #name ( & mut self, #name: #inner_ty) -> &mut Self {
+                        pub fn #name ( & mut self, #name: #raw_type ) -> &mut Self {
                             self.#name = Some(#name);
+                            self
+                        }
+                    }
+                } else if builder_attribute(f).is_some() { // not same_name
+                    quote! {
+                        pub fn #name ( & mut self, #name: #ty) -> &mut Self {
+                            self.#name = #name;
                             self
                         }
                     }
