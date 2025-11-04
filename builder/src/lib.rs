@@ -184,6 +184,14 @@ pub fn derive(input: TokenStream) -> TokenStream {
                 }
             }
         }});
+    let build_empty = fields.iter().map(|f| {
+        let name = &f.ident;
+        if builder_attribute(f).is_some() {
+            quote! { #name: Vec::new()}
+        } else {
+            quote! { #name: None}
+        }
+    });
 
     // tokens
     // eprintln!("{:#?}", ast);
@@ -207,10 +215,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
             impl #name {
                 fn builder() -> #builder_ident {
                     return #builder_ident {
-                        executable: None,
-                        current_dir: None,
-                        env: None,
-                        args: None,
+                        #(#build_empty,)*
                     }
                 }
             }
