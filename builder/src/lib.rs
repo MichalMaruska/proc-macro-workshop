@@ -52,10 +52,11 @@ fn extract_attribute(f: &syn::Field) -> Option<proc_macro2::Ident> {
                 // tokens[Ident = Literal]
                 // ident = "each"
                 // literal ... name of the function.
-                eprintln!("Found: {:#?}", attr); // f.attrs
+                // eprintln!("Found: {:#?}", attr); // f.attrs
 
                 if let Meta::List(ref list) = attr.meta {
-                    eprintln!("extract: {:#?}", list);
+                    // eprintln!("extract: {:#?}", list);
+
                     // let atrr.parse_args()
                     // assert_eq!(list.tokens.Ident, "each");
                 } else {
@@ -69,10 +70,9 @@ fn extract_attribute(f: &syn::Field) -> Option<proc_macro2::Ident> {
                 if let Expr::Assign(assign) = assignment {
                     // ExprAssign
                     // fixme: eprintln!("it's an assignment: {:#?}", assign);
-                    dbg!(&assign.left);
-                    dbg!(&assign.right);
-
-                    dbg!(& attr.path().segments.first().unwrap().ident);
+                    // dbg!(&assign.left);
+                    // dbg!(&assign.right);
+                    // dbg!(& attr.path().segments.first().unwrap().ident);
 
                     // let Expr::Lit{ syn::ExprLit(lit: Lit::Str(ref strlit))} = *assign.right
                     // Expr
