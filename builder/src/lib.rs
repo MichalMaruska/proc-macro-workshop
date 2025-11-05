@@ -9,7 +9,7 @@ use std::assert_matches::assert_matches;
 // > parse errors correctly back to the compiler when parsing fails.
 // so it's even better?
 use syn::{parse_macro_input, DeriveInput};
-use syn::{Meta,Expr,Lit,ExprLit, Path};
+use syn::{Meta,Expr,Lit,ExprLit,Attribute};
 use quote::quote;
 
 // at 1:26 he simplifies a lot. to meet another requirement
@@ -40,8 +40,7 @@ fn ty_inner_type<'t> (outer: &'_ str, ty: &'t syn::Type) -> Option<&'t syn::Type
 
 // Based on what I see in the dump
 // returns each = "ident"
-fn extract_attribute(f: &syn::Field) -> Option<proc_macro2::Ident> {
-    let name = "each";
+fn builder_attribute(f: &syn::Field) -> Option<&Attribute> {
 
     for attr in &f.attrs {
         // we want it Outer -- in front of the field name
@@ -49,54 +48,65 @@ fn extract_attribute(f: &syn::Field) -> Option<proc_macro2::Ident> {
         // it's not a path, but MetaList
         if attr.path().segments.len() == 1 &&
             attr.path().is_ident("builder") {
-                // tokens[Ident = Literal]
-                // ident = "each"
-                // literal ... name of the function.
-                // eprintln!("Found: {:#?}", attr); // f.attrs
-
-                if let Meta::List(ref list) = attr.meta {
-                    // eprintln!("extract: {:#?}", list);
-
-                    // let atrr.parse_args()
-                    // assert_eq!(list.tokens.Ident, "each");
-                } else {
-                    panic!("not a list?")
-                }
-                // if let list attr.path()
-                // parse_args_with
-
-                let assignment: Expr = attr.parse_args().unwrap(); // fixme!
-
-                if let Expr::Assign(assign) = assignment {
-                    // ExprAssign
-                    // fixme: eprintln!("it's an assignment: {:#?}", assign);
-                    // dbg!(&assign.left);
-                    // dbg!(&assign.right);
-                    // dbg!(& attr.path().segments.first().unwrap().ident);
-
-                    // let Expr::Lit{ syn::ExprLit(lit: Lit::Str(ref strlit))} = *assign.right
-                    // Expr
-                    // syn::ExprLit
-                    // ExprLit(ref lit )
-
-
-                    if let Expr::Lit( ExprLit{lit: Lit::Str(ref strlit), ..} ) = *assign.right {
-                        dbg!(&strlit);
-
-                        if let Expr::Path(ref i) = *assign.left {
-                            return Some(
-                                proc_macro2::Ident::new(
-                                    &strlit.value(),
-                                    attr.path().segments.first().unwrap().ident.span(),
-                                )
-                            )
-                        }}
-                } else {
-                    panic!("not an assignment")
-                }
+                return Some(attr)
             }
     }
     None
+}
+
+fn extract_builder(field_name: &str, attr: &Attribute) -> Option<(bool, proc_macro2::Ident)> {
+    let name = "each";
+
+    // tokens[Ident = Literal]
+    // ident = "each"
+    // literal ... name of the function.
+    // eprintln!("Found: {:#?}", attr); // f.attrs
+
+    if let Meta::List(ref list) = attr.meta {
+        // eprintln!("extract: {:#?}", list);
+
+        // let atrr.parse_args()
+        // assert_eq!(list.tokens.Ident, "each");
+    } else {
+        panic!("not a list?")
+    }
+    // if let list attr.path()
+    // parse_args_with
+
+    let assignment: Expr = attr.parse_args().unwrap(); // fixme!
+
+    if let Expr::Assign(assign) = assignment {
+        // ExprAssign
+        // fixme: eprintln!("it's an assignment: {:#?}", assign);
+        // dbg!(&assign.left);
+        // dbg!(&assign.right);
+        // dbg!(& attr.path().segments.first().unwrap().ident);
+
+        // let Expr::Lit{ syn::ExprLit(lit: Lit::Str(ref strlit))} = *assign.right
+        // Expr
+        // syn::ExprLit
+        // ExprLit(ref lit )
+
+
+        if let Expr::Lit( ExprLit{lit: Lit::Str(ref strlit), ..} ) = *assign.right {
+            dbg!(&strlit);
+
+            if let Expr::Path(ref i) = *assign.left {
+                return Some(
+                    (
+                    field_name == &strlit.value(),
+                    proc_macro2::Ident::new(
+                        &strlit.value(),
+                        // attr.path().segments.first().unwrap().ident,
+                        //span: Span
+                        attr.path().segments.first().unwrap().ident.span(),
+                    ))
+                )
+            }
+        }
+    }
+
+    panic!("not an assignment")
 }
 
 #[proc_macro_derive(Builder, attributes(builder))]
