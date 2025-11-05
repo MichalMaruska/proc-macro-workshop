@@ -67,10 +67,14 @@ fn extract_builder(field_name: &syn::Ident, ty: &syn::Type, attr: &Attribute) ->
 
         if let Expr::Path( ExprPath{ref path, ..} ) = *assign.left {
             if !path.is_ident("each") {
-                //assert_eq!(path.get_ident(), "each");
+                return (false,
+                        syn::Error::new_spanned(
+                            &attr.meta,
+                            "expected `builder(each = \"...\")`"
+                        ).into_compile_error()
+                );
             }
         }
-
 
         if let Expr::Lit( ExprLit{lit: Lit::Str(ref strlit), ..} ) = *assign.right {
             // dbg!(&strlit);
