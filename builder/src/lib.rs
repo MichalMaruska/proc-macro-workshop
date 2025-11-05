@@ -9,7 +9,7 @@ use std::assert_matches::assert_matches;
 // > parse errors correctly back to the compiler when parsing fails.
 // so it's even better?
 use syn::{parse_macro_input, DeriveInput};
-use syn::Expr;
+use syn::{Meta,Expr,Lit,ExprLit, Path};
 use quote::quote;
 
 // at 1:26 he simplifies a lot. to meet another requirement
@@ -39,7 +39,8 @@ fn ty_inner_type(ty: &syn::Type) -> Option<&syn::Type> {
 }
 
 // Based on what I see in the dump
-fn extract_attribute(f: &syn::Field) -> Option<proc_macro2::Ident> {
+// returns each = "ident"
+fn extract_attribute(f: &syn::Field) -> Option<proc_macro2::Ident>{
     let name = "each";
 
     for attr in &f.attrs {
@@ -51,24 +52,58 @@ fn extract_attribute(f: &syn::Field) -> Option<proc_macro2::Ident> {
                 // tokens[Ident = Literal]
                 // ident = "each"
                 // literal ... name of the function.
-                eprintln!("Found: {:#?}", f.attrs);
+                eprintln!("Found: {:#?}", attr); // f.attrs
 
-                let assignment: Expr = attr.parse_args().unwrap();
-                if let Expr::Assign(
-                    assign
-                ) = assignment {
+                if let Meta::List(ref list) = attr.meta {
+                    eprintln!("extract: {:#?}", list);
+                    // let atrr.parse_args()
+                    // assert_eq!(list.tokens.Ident, "each");
+                } else {
+                    panic!("not a list?")
+                }
+                // if let list attr.path()
+                // parse_args_with
+
+                let assignment: Expr = attr.parse_args().unwrap(); // fixme!
+
+                if let Expr::Assign(assign) = assignment {
                     // ExprAssign
-                    eprintln!("it's an assignment: {:#?}", assign);
-                    return Some(
-                        proc_macro2::Ident::new(
-                            "hello",
-                            // string: &str,
-                            //span: Span
-                            //
-                            attr.path().segments.first().unwrap().ident.span(),
-                        )
-                        // quote! {}
-                    )
+                    // fixme: eprintln!("it's an assignment: {:#?}", assign);
+                    dbg!(&assign.left);
+                    dbg!(&assign.right);
+
+                    dbg!(& attr.path().segments.first().unwrap().ident);
+
+                    // let Expr::Lit{ syn::ExprLit(lit: Lit::Str(ref strlit))} = *assign.right
+                    // Expr
+                    // syn::ExprLit
+                    // ExprLit(ref lit )
+
+                    if let Expr::Lit( litExpr ) = *assign.right {
+                    // if let Expr::Lit{ ExprLit{ lit: ref lit, ..} } = *assign.right {
+                        // bad: if let ExprLit(lit: ref litv, ..) = litExpr {
+                        // Good:
+                        if let ExprLit{lit: ref lit, ..} = litExpr {
+
+                            if let Lit::Str(strlit) = lit {
+                                dbg!(&strlit);
+
+                            if let Expr::Path(ref i) = *assign.left {
+                                return Some(
+                                    proc_macro2::Ident::new(
+                                        &strlit.value(),
+                                        // "hello",
+                                        // attr.path().segments.first().unwrap().ident,
+                                        // string: &str,
+                                        //span: Span
+                                        //
+                                        attr.path().segments.first().unwrap().ident.span(),
+                                    )
+                                    // quote! {}
+                                )
+                            }}}}
+                } else {
+                    panic!("not an assignment")
                 }
             }
     }
