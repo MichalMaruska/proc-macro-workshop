@@ -149,41 +149,62 @@ pub fn derive(input: TokenStream) -> TokenStream {
     let methods = fields.iter().map(|f| {
 
         // let name = &f.ident.unwrap();
-        let name = &f.ident.as_ref().unwrap();
+        let name = f.ident.as_ref().unwrap();
         let ty = &f.ty;
         let mut same_name: bool = false;
 
-        if let Some(ref ident) = extract_attribute(f) {
-            // dbg!(ident);
+        let mut single_adder  = None;
 
-            same_name = *name == ident;
+        if let Some(ref attr) = builder_attribute(f) {
+            let (same, ident) = extract_builder(&name.to_string(), attr).unwrap();
+            // dbg!(&ident);
+            same_name = same;
+
 
             // in this case I can assume it's Vec
             if let Some(inner_ty) = ty_inner_type("Vec", ty) {
-                return quote! {
-                    pub fn #ident ( & mut self, #name: #inner_ty) -> &mut Self {
-                        self.#name.push(#name);
-                        self
-                    }
-                }
+
+                single_adder =
+                    Some( quote! {
+                        pub fn #ident ( & mut self, #name: #inner_ty) -> &mut Self {
+                            self.#name.push(#name);
+                            self
+                        }
+                    });
             }
         }
 
-        if let Some(inner_ty) = ty_inner_type("Option", ty) {
-            quote! {
-                pub fn #name ( & mut self, #name: #inner_ty) -> &mut Self {
-                    self.#name = Some(#name);
-                    self
-                }
-            }
+        if same_name {
+            return single_adder.unwrap();
         } else {
-            quote! {
-                pub fn #name ( & mut self, #name: #ty) -> &mut Self {
-                    self.#name = Some(#name);
-                    self
-                }
+            // maybe both
+            let setter =
+                if let Some(inner_ty) = ty_inner_type("Option", ty) {
+                    quote! {
+                        pub fn #name ( & mut self, #name: #inner_ty) -> &mut Self {
+                            self.#name = Some(#name);
+                            self
+                        }
+                    }
+                } else {
+                    quote! {
+                        pub fn #name ( & mut self, #name: #ty) -> &mut Self {
+                            self.#name = Some(#name);
+                            self
+                        }
+                    }
+                };
+            if single_adder.is_some() {
+                quote!(
+                    #single_adder
+                    #setter
+                )
+            } else {
+                setter
             }
-        }});
+        }
+    });
+
     let build_empty = fields.iter().map(|f| {
         let name = &f.ident;
         if builder_attribute(f).is_some() {
