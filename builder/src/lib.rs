@@ -2,7 +2,10 @@ use proc_macro::TokenStream;
 
 #[proc_macro_derive(Builder)]
 pub fn derive(input: TokenStream) -> TokenStream {
-    let _ = input;
+    let _input = proc_macro2::TokenStream::from(input);
 
-    proc_macro::TokenStream::new()
+    /* transform input */
+    let output: proc_macro2::TokenStream = proc_macro2::TokenStream::default();
+
+    proc_macro::TokenStream::from(output)
 }
