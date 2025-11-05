@@ -1,4 +1,7 @@
+#![feature(assert_matches)]
 use proc_macro::TokenStream;
+use std::assert_matches::assert_matches;
+
 
 // Better?
 // mmc: I don't understand ... https://docs.rs/proc-macro2/1.0.103/proc_macro2/
@@ -41,10 +44,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
     let ast = parse_macro_input!(input as DeriveInput); // tokens ... > tree.
 
     // we expect this:
-    if let syn::Data::Struct(ref dataStruct) = ast.data {
-    } else {
-        panic!("not a struct");
-    }
+    assert_matches!(ast.data, syn::Data::Struct(_));
 
     let name = &ast.ident;
     let bname = format!("{name}Builder");
