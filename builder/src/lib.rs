@@ -47,7 +47,7 @@ fn extract_attribute(f: &syn::Field) -> Option<proc_macro2::Ident> {
         if attr.style == syn::AttrStyle::Outer {};
         // it's not a path, but MetaList
         if attr.path().segments.len() == 1 &&
-            attr.path().segments[0].ident == "builder" {
+            attr.path().is_ident("builder") {
                 // tokens[Ident = Literal]
                 // ident = "each"
                 // literal ... name of the function.
