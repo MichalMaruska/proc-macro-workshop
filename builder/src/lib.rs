@@ -6,17 +6,29 @@ use proc_macro::TokenStream;
 // > parse errors correctly back to the compiler when parsing fails.
 // so it's even better?
 use syn::{parse_macro_input, DeriveInput};
+use quote::quote;
 
 #[proc_macro_derive(Builder)]
 pub fn derive(input: TokenStream) -> TokenStream {
 
     // even better?
     let ast = parse_macro_input!(input as DeriveInput); // tokens ... > tree.
+    let name = &ast.ident;
+    let bname = format!("{name}Builder");
+    let bident = syn::Ident::new(&bname, ast.ident.span());
     // tokens
     // eprintln!("{:#?}", ast);
+    let output = //  proc_macro2::TokenStream
+        quote! {
+            struct #bident {
+            }
 
-    /* transform input */
-    let output: proc_macro2::TokenStream = proc_macro2::TokenStream::new();
+            impl #name {
+               fn builder() -> #bident {
+                    return #bident {}
+                }
+            }
+        };
 
-    proc_macro::TokenStream::from(output)
+    output.into()
 }
