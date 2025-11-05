@@ -166,7 +166,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
         let mut same_name: bool = false;
 
         if let Some(ref ident) = extract_attribute(f) {
-            dbg!(ident);
+            // dbg!(ident);
 
             same_name = *name == ident;
 
