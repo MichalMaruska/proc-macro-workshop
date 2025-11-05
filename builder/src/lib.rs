@@ -6,7 +6,6 @@ use proc_macro::TokenStream;
 // > parse errors correctly back to the compiler when parsing fails.
 // so it's even better?
 use syn::{parse_macro_input, DeriveInput};
-use syn::parse::{Parse};  // will use this trait!
 
 #[proc_macro_derive(Builder)]
 pub fn derive(input: TokenStream) -> TokenStream {
