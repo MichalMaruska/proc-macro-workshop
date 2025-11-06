@@ -54,7 +54,7 @@ fn builder_attribute(f: &syn::Field) -> Option<&Attribute> {
     None
 }
 
-fn extract_builder(field_name: &str, ty: &syn::Type, attr: &Attribute) -> (bool, proc_macro2::TokenStream) {
+fn extract_builder(field_name: &syn::Ident, ty: &syn::Type, attr: &Attribute) -> (bool, proc_macro2::TokenStream) {
 
     if let Meta::List(_) = attr.meta {
     } else {
@@ -82,7 +82,7 @@ fn extract_builder(field_name: &str, ty: &syn::Type, attr: &Attribute) -> (bool,
                 );
 
                 return (
-                    field_name == &strlit.value(),
+                    &field_name.to_string() == &strlit.value(),
 
                     quote! {
                         pub fn #ident (&mut self, value: #inner_ty) -> &mut Self {
@@ -169,7 +169,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
         let mut single_adder  = None;
 
         if let Some(ref attr) = builder_attribute(f) {
-            let (same, custom_setter) = extract_builder(&name.to_string(), ty, attr);
+            let (same, custom_setter) = extract_builder(&name, ty, attr);
             same_name = same;
             // in this case I can assume it's Vec
             single_adder = Some(custom_setter);
