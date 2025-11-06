@@ -80,7 +80,7 @@ fn extract_builder(field_name: &syn::Ident, ty: &syn::Type, attr: &Attribute) ->
             // dbg!(&strlit);
             if let Some(inner_ty) = ty_inner_type("Vec", ty) {
 
-                let ident = proc_macro2::Ident::new(
+                let ident = syn::Ident::new(
                     &strlit.value(),
                     attr.path().segments.first().unwrap().ident.span(),
                 );
