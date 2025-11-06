@@ -206,8 +206,9 @@ pub fn derive(input: TokenStream) -> TokenStream {
                     }
                 };
             if single_adder.is_some() {
+                let fun = single_adder.unwrap();
                 quote!(
-                    #single_adder
+                    #fun
                     #setter
                 )
             } else {
