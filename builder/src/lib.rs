@@ -54,7 +54,7 @@ fn builder_attribute(f: &syn::Field) -> Option<&Attribute> {
     None
 }
 
-fn extract_builder(field_name: &str, attr: &Attribute) -> Option<(bool, proc_macro2::Ident)> {
+fn extract_builder(field_name: &str, ty: &syn::Type, attr: &Attribute) -> (bool, proc_macro2::TokenStream) {
 
     if let Meta::List(_) = attr.meta {
     } else {
@@ -67,24 +67,33 @@ fn extract_builder(field_name: &str, attr: &Attribute) -> Option<(bool, proc_mac
 
         if let Expr::Path( ExprPath{ref path, ..} ) = *assign.left {
             if !path.is_ident("each") {
-            //assert_eq!(path.get_ident(), "each");
+                //assert_eq!(path.get_ident(), "each");
+            }
         }
 
 
         if let Expr::Lit( ExprLit{lit: Lit::Str(ref strlit), ..} ) = *assign.right {
             // dbg!(&strlit);
-            return Some(
-                    (
-                    field_name == &strlit.value(),
-                    proc_macro2::Ident::new(
-                        &strlit.value(),
-                        attr.path().segments.first().unwrap().ident.span(),
-                    ))
-                )
-            }
-        }
-    }
+            if let Some(inner_ty) = ty_inner_type("Vec", ty) {
 
+                let ident = proc_macro2::Ident::new(
+                    &strlit.value(),
+                    attr.path().segments.first().unwrap().ident.span(),
+                );
+
+                return (
+                    field_name == &strlit.value(),
+
+                    quote! {
+                        pub fn #ident (&mut self, value: #inner_ty) -> &mut Self {
+                            self.#field_name.push(value);
+                            self
+                        }
+                    }
+                )
+            } else {
+                panic!("not a Vector");
+            }}}
     panic!("not an assignment")
 }
 
@@ -160,21 +169,10 @@ pub fn derive(input: TokenStream) -> TokenStream {
         let mut single_adder  = None;
 
         if let Some(ref attr) = builder_attribute(f) {
-            let (same, ident) = extract_builder(&name.to_string(), attr).unwrap();
+            let (same, custom_setter) = extract_builder(&name.to_string(), ty, attr);
             same_name = same;
-
-
             // in this case I can assume it's Vec
-            if let Some(inner_ty) = ty_inner_type("Vec", ty) {
-
-                single_adder =
-                    Some( quote! {
-                        pub fn #ident ( & mut self, #name: #inner_ty) -> &mut Self {
-                            self.#name.push(#name);
-                            self
-                        }
-                    });
-            }
+            single_adder = Some(custom_setter);
         }
 
         if same_name {
