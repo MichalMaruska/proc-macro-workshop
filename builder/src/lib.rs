@@ -161,7 +161,6 @@ pub fn derive(input: TokenStream) -> TokenStream {
 
         if let Some(ref attr) = builder_attribute(f) {
             let (same, ident) = extract_builder(&name.to_string(), attr).unwrap();
-            // dbg!(&ident);
             same_name = same;
 
 
