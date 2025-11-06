@@ -63,7 +63,7 @@ fn extract_builder(field_name: &syn::Ident, ty: &syn::Type, attr: &Attribute) ->
 
     let assignment: Expr = attr.parse_args().unwrap(); // fixme!
 
-    if let Expr::Assign(assign) = assignment {
+    if let Expr::Assign(ref assign) = assignment {
 
         if let Expr::Path( ExprPath{ref path, ..} ) = *assign.left {
             if !path.is_ident("each") {
